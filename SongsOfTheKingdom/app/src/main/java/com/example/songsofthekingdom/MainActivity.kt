@@ -3,54 +3,38 @@ package com.example.songsofthekingdom
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.example.songsofthekingdom.ui.theme.HomePage
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.songsofthekingdom.ui.SongsApp
 import com.example.songsofthekingdom.ui.theme.SongsOfTheKingdomTheme
 
 class MainActivity : ComponentActivity() {
-
     private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
-        installSplashScreen().apply{
-                viewModel.isLoading.value
-        }
+        enableEdgeToEdge()
         setContent {
-            SongsOfTheKingdomTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ){
-                        HomePage()
-                    }
-                }
+            val state by viewModel.uiState.collectAsStateWithLifecycle()
+            SongsOfTheKingdomTheme(
+                preference = state.preferences.theme,
+                dynamicColor = state.preferences.dynamicColor,
+            ) {
+                SongsApp(
+                    state = state,
+                    onSearch = viewModel::search,
+                    onToggleFavorite = viewModel::toggleFavorite,
+                    onSongOpened = viewModel::recordOpened,
+                    onThemeChanged = viewModel::setTheme,
+                    onTextScaleChanged = viewModel::setTextScale,
+                    onReduceMotionChanged = viewModel::setReduceMotion,
+                    onDynamicColorChanged = viewModel::setDynamicColor,
+                )
             }
         }
-    }
-}
-
-
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    SongsOfTheKingdomTheme {
-        HomePage()
     }
 }
